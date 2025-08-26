@@ -52,6 +52,33 @@ const Booking = () => {
       });
   }, []);
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const formData = {
+      fullName: e.target[0].value,
+      email: e.target[1].value,
+      phone: e.target[2].value,
+      date: e.target[3].value,
+      time: e.target[4].value,
+      guests: e.target[5].value,
+      requests: e.target[6].value,
+    };
+
+    const res = await fetch("/api/bookings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    });
+
+    if (res.ok) {
+      alert("Table reserved successfully!");
+      e.target.reset();
+    } else {
+      alert("Failed to reserve table. Please try again.");
+    }
+  };
+
   return (
     <section
       id="booking"
@@ -76,7 +103,10 @@ const Booking = () => {
           Book a Table
         </h2>
 
-        <form className="flex flex-col gap-5 w-full max-w-4xl text-left">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col gap-5 w-full max-w-4xl text-left"
+        >
           <input
             type="text"
             placeholder="Full Name"
