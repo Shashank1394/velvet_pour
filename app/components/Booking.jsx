@@ -3,12 +3,16 @@
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger, SplitText } from "gsap/all";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
 const Booking = () => {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+
   useGSAP(() => {
-    // Title animation
     const titleSplit = SplitText.create("#booking h2", { type: "words" });
 
     gsap
@@ -30,7 +34,6 @@ const Booking = () => {
         stagger: 0.1,
       });
 
-    // Leaves animation
     const leafTimeline = gsap.timeline({
       scrollTrigger: {
         trigger: "#booking",
@@ -71,9 +74,11 @@ const Booking = () => {
       body: JSON.stringify(formData),
     });
 
-    if (res.ok) {
-      alert("Table reserved successfully!");
-      e.target.reset();
+    const data = await res.json();
+    setLoading(false);
+
+    if (res.ok && data.booking) {
+      router.push(`/reservation/${data.booking._id}`);
     } else {
       alert("Failed to reserve table. Please try again.");
     }
@@ -152,9 +157,9 @@ const Booking = () => {
           ></textarea>
           <button
             type="submit"
-            className="bg-yellow text-black font-semibold py-4 rounded-lg hover:opacity-90 transition-opacity"
+            className="bg-yellow text-black font-semibold py-3 rounded-lg hover:opacity-90 transition"
           >
-            Reserve Table
+            {loading ? "Reserving..." : "Reserve Table"}
           </button>
         </form>
       </div>

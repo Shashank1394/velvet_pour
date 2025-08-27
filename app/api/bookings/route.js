@@ -16,11 +16,15 @@ export async function POST(req) {
       requests: body.requests || "",
     });
 
-    return new Response(JSON.stringify(newBooking), { status: 201 });
+    return new Response(JSON.stringify({ booking: newBooking }), {
+      status: 201,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     console.error("Booking error:", error);
     return new Response(JSON.stringify({ error: "Failed to create booking" }), {
       status: 500,
+      headers: { "Content-Type": "application/json" },
     });
   }
 }
