@@ -74,7 +74,7 @@ export async function POST(req) {
 }
 
 // Optional: GET to list bookings if needed
-export async function GET(req) {
+export async function GET() {
   await dbConnect();
   try {
     const bookings = await Booking.find().sort({ date: 1, time: 1 }).lean();
@@ -83,9 +83,12 @@ export async function GET(req) {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
-    return new Response(JSON.stringify({ error: "Failed to fetch bookings" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ error: `Failed to fetch bookings : ${err}` }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   }
 }
