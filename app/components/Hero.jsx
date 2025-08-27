@@ -106,6 +106,8 @@ const Hero = () => {
                 senses.{" "}
               </p>
               <a href="#cocktails">View Cocktails</a>
+              <br />
+              <a href="#booking">Book a Table</a>
             </div>
           </div>
         </div>

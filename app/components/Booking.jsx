@@ -5,12 +5,22 @@ import { useGSAP } from "@gsap/react";
 import { ScrollTrigger, SplitText } from "gsap/all";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "react-hot-toast";
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
 const Booking = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+
+  // Form states
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("12:00 PM");
+  const [guests, setGuests] = useState(1);
+  const [requests, setRequests] = useState("");
 
   useGSAP(() => {
     const titleSplit = SplitText.create("#booking h2", { type: "words" });
@@ -57,30 +67,39 @@ const Booking = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     const formData = {
-      fullName: e.target[0].value,
-      email: e.target[1].value,
-      phone: e.target[2].value,
-      date: e.target[3].value,
-      time: e.target[4].value,
-      guests: e.target[5].value,
-      requests: e.target[6].value,
+      fullName,
+      email,
+      phone,
+      date,
+      time,
+      guests: Number(guests),
+      requests,
     };
 
-    const res = await fetch("/api/bookings", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    });
+    try {
+      const res = await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
 
-    const data = await res.json();
-    setLoading(false);
+      const data = await res.json();
+      setLoading(false);
 
-    if (res.ok && data.booking) {
-      router.push(`/reservation/${data.booking._id}`);
-    } else {
-      alert("Failed to reserve table. Please try again.");
+      if (res.ok && data.booking) {
+        toast.success("✅ Table reserved successfully!");
+        router.push(`/reservation/${data.booking._id}`);
+      } else {
+        toast.error(
+          data.error || "❌ Failed to reserve table. Please try again."
+        );
+      }
+    } catch (err) {
+      setLoading(false);
+      toast.error("❌ Something went wrong. Please try again.");
     }
   };
 
@@ -115,44 +134,75 @@ const Booking = () => {
           <input
             type="text"
             placeholder="Full Name"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
             className="bg-transparent border border-white-100 p-4 text-white rounded-lg focus:outline-none focus:border-yellow transition-colors"
             required
           />
           <input
             type="email"
             placeholder="Email Address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             className="bg-transparent border border-white-100 p-4 text-white rounded-lg focus:outline-none focus:border-yellow transition-colors"
             required
           />
           <input
             type="tel"
             placeholder="Phone Number"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
             className="bg-transparent border border-white-100 p-4 text-white rounded-lg focus:outline-none focus:border-yellow transition-colors"
             required
           />
           <div className="flex gap-5 flex-col sm:flex-row">
             <input
               type="date"
+              min={new Date().toISOString().split("T")[0]}
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
               className="bg-transparent border border-white-100 p-4 text-white rounded-lg focus:outline-none focus:border-yellow transition-colors w-full sm:w-1/2"
               required
             />
-            <input
-              type="time"
-              className="bg-transparent border border-white-100 p-4 text-white rounded-lg focus:outline-none focus:border-yellow transition-colors w-full sm:w-1/2"
-              placeholder="Time"
-              required
-            />
+            <div className="flex flex-wrap gap-2 w-full sm:w-1/2">
+              {[
+                "12:00 PM",
+                "01:00 PM",
+                "02:00 PM",
+                "03:00 PM",
+                "04:00 PM",
+                "05:00 PM",
+                "06:00 PM",
+              ].map((slot) => (
+                <button
+                  key={slot}
+                  type="button"
+                  className={`p-3 rounded-lg border border-white-100 text-white transition ${
+                    time === slot
+                      ? "bg-yellow text-black"
+                      : "hover:bg-yellow hover:text-black"
+                  }`}
+                  onClick={() => setTime(slot)}
+                >
+                  {slot}
+                </button>
+              ))}
+            </div>
           </div>
           <input
             type="number"
             placeholder="Number of Guests"
             min="1"
+            value={guests}
+            onChange={(e) => setGuests(e.target.value)}
             className="bg-transparent border border-white-100 p-4 text-white rounded-lg focus:outline-none focus:border-yellow transition-colors"
             required
           />
           <textarea
             placeholder="Special Requests (optional)"
             rows="4"
+            value={requests}
+            onChange={(e) => setRequests(e.target.value)}
             className="bg-transparent border border-white-100 p-4 text-white rounded-lg focus:outline-none focus:border-yellow transition-colors resize-none"
           ></textarea>
           <button
